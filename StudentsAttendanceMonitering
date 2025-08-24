@@ -1,0 +1,126 @@
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+// Structure for each attendance record
+struct Attendance {
+    int studentID;
+    char date[15];   // example: "2025-08-24"
+    char status;     // 'P' = Present, 'A' = Absent
+    struct Attendance* next;
+};
+
+// Function to create a new node
+struct Attendance* createNode(int id, char* date, char status) {
+    struct Attendance* newNode = (struct Attendance*)malloc(sizeof(struct Attendance));
+    newNode->studentID = id;
+    strcpy(newNode->date, date);
+    newNode->status = status;
+    newNode->next = NULL;
+    return newNode;
+}
+
+// Insert new attendance record at the beginning
+void addAttendance(struct Attendance** head, int id, char* date, char status) {
+    struct Attendance* newNode = createNode(id, date, status);
+    newNode->next = *head;
+    *head = newNode;
+    printf("Attendance added.\n");
+}
+
+// Delete a record by studentID and date
+void deleteAttendance(struct Attendance** head, int id, char* date) {
+    struct Attendance *temp = *head, *prev = NULL;
+
+    while (temp != NULL && !(temp->studentID == id && strcmp(temp->date, date) == 0)) {
+        prev = temp;
+        temp = temp->next;
+    }
+
+    if (temp == NULL) {
+        printf("Record not found.\n");
+        return;
+    }
+
+    if (prev == NULL)  // deleting first node
+        *head = temp->next;
+    else
+        prev->next = temp->next;
+
+    free(temp);
+    printf("Record deleted.\n");
+}
+
+// Search attendance by studentID and date
+void searchAttendance(struct Attendance* head, int id, char* date) {
+    while (head != NULL) {
+        if (head->studentID == id && strcmp(head->date, date) == 0) {
+            printf("Found: Student %d on %s = %c\n", id, date, head->status);
+            return;
+        }
+        head = head->next;
+    }
+    printf("Record not found.\n");
+}
+
+// Display all students for a particular date
+void displayByDate(struct Attendance* head, char* date) {
+    int found = 0;
+    while (head != NULL) {
+        if (strcmp(head->date, date) == 0) {
+            printf("Student %d : %c\n", head->studentID, head->status);
+            found = 1;
+        }
+        head = head->next;
+    }
+    if (!found) printf("No records found for %s\n", date);
+}
+
+// Reverse display using recursion
+void displayReverse(struct Attendance* head) {
+    if (head == NULL) return;
+    displayReverse(head->next);
+    printf("%d | %s | %c\n", head->studentID, head->date, head->status);
+}
+
+int main() {
+    struct Attendance* head = NULL;
+    int choice, id;
+    char date[15], status;
+
+    while (1) {
+        printf("\n--- Attendance System ---\n");
+        printf("1. Add Attendance\n2. Delete Attendance\n3. Search Attendance\n4. Display by Date\n5. Reverse Display\n6. Exit\nChoose: ");
+        scanf("%d", &choice);
+
+        if (choice == 1) {
+            printf("Enter StudentID Date(YYYY-MM-DD) Status(P/A): ");
+            scanf("%d %s %c", &id, date, &status);
+            addAttendance(&head, id, date, status);
+        }
+        else if (choice == 2) {
+            printf("Enter StudentID and Date to delete: ");
+            scanf("%d %s", &id, date);
+            deleteAttendance(&head, id, date);
+        }
+        else if (choice == 3) {
+            printf("Enter StudentID and Date to search: ");
+            scanf("%d %s", &id, date);
+            searchAttendance(head, id, date);
+        }
+        else if (choice == 4) {
+            printf("Enter Date to display: ");
+            scanf("%s", date);
+            displayByDate(head, date);
+        }
+        else if (choice == 5) {
+            printf("Reverse Display:\n");
+            displayReverse(head);
+        }
+        else if (choice == 6) break;
+        else printf("Invalid choice!\n");
+    }
+
+    return 0;
+}
